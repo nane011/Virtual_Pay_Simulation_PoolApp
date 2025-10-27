@@ -1,0 +1,56 @@
+﻿@model ApplicationUser
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Kullanıcı Detayları</h3>
+    @* Geri butonu, soldaki "Aktif Kullanıcılar" butonuna tıklar gibi çalışacak *@
+    <button class="btn btn-secondary" onclick="$('#userAccountsBtn').click();">← Listeye Geri Dön</button>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>@Model.Name @Model.Surname</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-5">TC Kimlik No</dt>
+                    <dd class="col-sm-7">@Model.UserName</dd>
+
+                    <dt class="col-sm-5">E-posta Adresi</dt>
+                    <dd class="col-sm-7">@Model.Email</dd>
+
+                    <dt class="col-sm-5">Telefon Numarası</dt>
+                    <dd class="col-sm-7">@Model.PhoneNumber</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-5">Kullanıcı Tipi</dt>
+                    <dd class="col-sm-7">@Model.UserType</dd>
+
+                    <dt class="col-sm-5">Cinsiyet</dt>
+                    <dd class="col-sm-7">@Model.Gender</dd>
+
+                    <dt class="col-sm-5">Bileklik Numarası</dt>
+                    <dd class="col-sm-7">@Model.WristBand</dd>
+
+                    <dt class="col-sm-5">Ceza Puanı</dt>
+                    <dd class="col-sm-7">
+                        @{
+                            var penaltyCount = ViewBag.PenaltyCount ?? 0;
+                            var badgeClass = penaltyCount == 0 ? "bg-success" : (penaltyCount == 1 ? "bg-warning text-dark" : "bg-danger");
+                        }
+                        <span class="badge @badgeClass fs-6">@penaltyCount</span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        <hr />
+        <div class="text-end">
+            <button class="btn btn-info view-attendance-btn" data-userid="@Model.Id">
+                Giriş Kayıtları
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,96 @@
+﻿@model Virtual_Pay_Simulation.Models.ViewModels.SeanceViewModel
+@{
+    ViewBag.Title = "Tek Tek Seans Ekle";
+}
+
+<div class="container mt-5">
+    <h2>@Model.ServiceTitle - Gün Kalıplarına Seans Ekle</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="alert alert-danger" role="alert">
+        <strong>UYARI:</strong> Bu alanda seansları oluştururken kadın ve erkek, ve günlerin hepsi için ayrı ayrı ekleyeceğiniz seansları girmeyi unutmayınız. Günlere istediğiniz şekilde ve kadın-erkek ayrı ayrı farklı seanslar ve saatler oluşturabilirsiniz.
+    </div>
+
+    @foreach (var template in Model.Templates)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <strong>@template.TemplateName</strong> - <em>@template.Gender</em>
+            </div>
+            <div class="card-body">
+                @foreach (var day in template.Days.OrderBy(d => d.Day))
+                {
+                    <div class="border p-3 mb-3">
+                        <h6 class="mb-3">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(day.Day)</h6>
+
+                        <form asp-action="SaveSingleSeance" method="post" class="row g-2">
+                            <input type="hidden" name="serviceId" value="@Model.ServiceId" />
+                            <input type="hidden" name="templateId" value="@template.TemplateId" />
+                            <input type="hidden" name="dayOfWeek" value="@((int)day.Day)" />
+
+                            <div class="col-md-3">
+                                <label>Başlangıç</label>
+                                <input type="time" name="startTime" class="form-control" required />
+                            </div>
+                            <div class="col-md-3">
+                                <label>Bitiş</label>
+                                <input type="time" name="endTime" class="form-control" required />
+                            </div>
+                            <div class="col-md-2">
+                                <label>Min</label>
+                                <input type="number" name="minCapacity" class="form-control" required />
+                            </div>
+                            <div class="col-md-2">
+                                <label>Sınır</label>
+                                <input type="number" name="borderCapacity" class="form-control" required />
+                            </div>
+                            <div class="col-md-2">
+                                <label>Max</label>
+                                <input type="number" name="maxCapacity" class="form-control" required />
+                            </div>
+
+                            <div class="col-12 mt-2">
+                                <button class="btn btn-outline-success w-100">Seansı Kaydet</button>
+                            </div>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<a href="/Admin/CurrentServices" id="backButton" class="btn btn-secondary mb-4">Çıkış</a>
+
+
+@section Scripts {
+    <script>
+        document.getElementById("backButton").addEventListener("click", function(e) {
+            e.preventDefault(); // Varsayılan link hareketini durdur
+
+            // Çıkarmak istediğiniz uyarı mesajı
+            const confirmationMessage = "Bu sayfadan ayrılırsanız, geri dönerek tekrar seans ekleme seçeneğine sahip olamayacaksınız. Emin misiniz?";
+
+            if (confirm(confirmationMessage)) {
+                // Kullanıcı 'Tamam' derse, hizmet listesine (CurrentServices) yönlendir.
+                // Not: ServiceInfo sayfasına dönmek daha mantıklı olabilir.
+                // Eğer ServiceInfo'ya dönmek isterseniz, aşağıdaki URL'yi kullanın:
+                // window.location.href = `/Admin/ServiceInfo?id=@Model.ServiceId`;
+
+                // Şu anki yönlendirme, genellikle hizmetleri listeleyen sayfadır:
+                window.location.href = "/Admin/CurrentServices";
+            }
+            // Kullanıcı 'İptal' derse, hiçbir şey yapmaz ve sayfada kalır.
+        });
+
+
+    </script>
+}

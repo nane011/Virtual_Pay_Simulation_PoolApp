@@ -1,0 +1,238 @@
+﻿@{
+    ViewData["Title"] = "Kullanıcı Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Seçenekler paneli -->
+        <div class="col-md-3 bg-light p-3">
+            <div class="list-group">
+                <button id="userAccountsBtn" class="list-group-item list-group-item-action">Aktif Kullanıcılar</button>
+                <button id="preRegistrationsBtn" class="list-group-item list-group-item-action active">Ön Kayıtlar</button>
+                <button id="blockedAccountsBtn" class="list-group-item list-group-item-action">Bloke Hesaplar</button>
+                <a href="/Admin/AdminPan" class="btn btn-secondary mt-3">Geri</a>
+            </div>
+        </div>
+        <!-- Sağ panel, içerik gösterim alanı -->
+        <div class="col-md-9 p-3">
+            <div id="contentArea">
+                <!-- İçerik buraya dinamik olarak yüklenecek -->
+            </div>
+            <div id="modalContainer"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // --- WebSocket'ten gelen veriyi işleyen global fonksiyon ---
+                // --- WebSocket'ten gelen veriyi işleyen global fonksiyon ---
+        window.updateWristbandUI = function(data) {
+            if (data && data.status === "success") {
+                $('#wristBandInputHidden').val(data.id);
+                $('#wristBandInput').val(data.id);
+                $('#wristbandStatus').text('Bileklik ID başarıyla okundu!').css('color', 'green');
+                toastr.success('Bileklik okundu!');
+
+                // Aktivasyon butonunu aktif et
+                $('#completeActivationBtn').prop('disabled', false);
+            } else {
+                $('#wristBandInputHidden').val('');
+                $('#wristBandInput').val('');
+                $('#wristbandStatus').text('Hata: ' + (data ? data.message : "Bilinmeyen bir hata oluştu.")).css('color', 'red');
+                if (data && data.message) toastr.error(data.message);
+
+                // Aktivasyon butonunu pasif yap
+                $('#completeActivationBtn').prop('disabled', true);
+            }
+            $('#readWristbandBtn').prop('disabled', false).text('Bilekliği Algıla');
+        };
+
+        $(document).ready(function() {
+            // --- MERKEZİ OLAY YÖNETİMİ ---
+            const contentArea = $("#contentArea");
+            const modalContainer = $("#modalContainer");
+
+            // --- Partial View Yükleme ve Menü Yönetimi ---
+            function loadPartial(actionName, params) {
+                var url = '@Url.Action("ACTION_NAME", "Admin")'.replace("ACTION_NAME", actionName);
+                if (params) {
+                    url += '?' + $.param(params);
+                }
+                contentArea.html('<div class="text-center p-5"><div class="spinner-border" role="status"><span class="visually-hidden">Yükleniyor...</span></div></div>');
+                contentArea.load(url);
+            }
+
+            function loadAttendanceHistory(userId) {
+                const url = '@Url.Action("LoadAttendanceHistory", "Admin")?userId=' + userId;
+                contentArea.html('<div class="text-center p-4"><div class="spinner-border"></div></div>').load(url);
+            }
+
+            $(".list-group-item").on('click', function() {
+                $(".list-group-item").removeClass("active");
+                $(this).addClass("active");
+            });
+            $("#userAccountsBtn").click(() => loadPartial('LoadUserAccounts'));
+            $("#preRegistrationsBtn").click(() => loadPartial('LoadPreRegistrations'));
+            $("#blockedAccountsBtn").click(() => loadPartial('LoadBlockedAccounts'));
+            $("#preRegistrationsBtn").click(); // Başlangıçta yükle
+
+            contentArea.on('click', '.unblock-user-btn', function() {
+                var userId = $(this).data('userid');
+                var button = $(this);
+                if (confirm('Bu kullanıcının blokesini kaldırmak ve tüm ceza puanlarını silmek istediğinizden emin misiniz?')) {
+                    button.prop('disabled', true).text('İşleniyor...');
+                    $.post('@Url.Action("UnblockUser", "Admin")', { userId: userId })
+                        .done(function(response) {
+                            if (response.success) {
+                                button.closest('tr').fadeOut(500, function() { $(this).remove(); });
+                            } else {
+                                alert(response.message || 'Engel kaldırılamadı.');
+                                button.prop('disabled', false).text('Engeli Kaldır');
+                            }
+                        });
+                }
+            });
+
+
+            // --- TÜM BUTON TIKLAMALARI İÇİN OLAY DİNLEYİCİLERİ ---
+
+                    contentArea.on('click', '.approve-user-btn', function() {
+            var userId = $(this).data('userid');
+            $.get('@Url.Action("LoadActivationModal", "Admin")', { userId: userId })
+                .done(function(modalHtml) {
+                    // Önceki modal'ı temizle
+                    $('#activationModal').remove();
+
+                    modalContainer.html(modalHtml);
+                    var modal = new bootstrap.Modal(modalContainer.find('#activationModal'));
+                    modal.show();
+
+                    // Modal kapatıldığında temizleme işlemi
+                    modalContainer.find('#activationModal').on('hidden.bs.modal', function () {
+                        $(this).remove();
+                    });
+                });
+        });
+
+
+            // 2. "Detayları Görüntüle" butonuna tıklandığında
+            contentArea.on('click', '.view-details-btn', function() {
+                var userId = $(this).data('userid');
+                loadPartial('LoadUserDetails', { userId: userId });
+            });
+
+            //Yeni eklenen olaayy
+            contentArea.on('click', '.view-attendance-btn', function() {
+                var userId = $(this).data('userid');
+                loadAttendanceHistory(userId); // Merkezi fonksiyonu çağır
+            });
+
+            contentArea.on('click', '.back-to-details-btn', function() {
+                var userId=$(this).data('userid');
+                loadPartial('LoadUserDetails', {userId: userId});
+            });
+
+            contentArea.on('click', '.delete-user-btn', function() {
+                var userId = $(this).data('userid');
+                var userName = $(this).data('username');
+                var button = $(this);
+
+                if (confirm(`DİKKAT: "${userName}" adlı kullanıcıyı kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz. Ve, kişiyi sildikten sonra lütfen sayfayı yenileyin.`)) {
+
+                    // Butonu pasif yap ve "Siliniyor..." yaz
+                    button.prop('disabled', true).text('Siliniyor...');
+
+                    $.post('@Url.Action("DeleteUser", "Admin")', { userId: userId })
+                        .done(function(response) {
+                            if (response.success) {
+                                toastr.success(`"${userName}" adlı kullanıcı başarıyla silindi.`);
+
+                                // Silinen kullanıcının satırını tablodan animasyonla kaldır
+                                button.closest('tr').fadeOut(500, function() {
+                                    $(this).remove();
+                                });
+
+                            } else {
+                                toastr.error(response.message || 'Silme işlemi başarısız.');
+                                button.prop('disabled', false).text('Sil'); // Hata durumunda butonu geri aktif et
+                            }
+                        })
+                        .fail(function() {
+                            toastr.error('Sunucu ile iletişim kurulamadı.');
+                            button.prop('disabled', false).text('Sil'); // Hata durumunda butonu geri aktif et
+                        });
+                }
+            });
+
+            // --- LÜTFEN MEVCUT KODU BU BASİT VE GÜVENİLİR BLOKLA DEĞİŞTİRİN ---
+            modalContainer.on('submit', '#activationForm', function(event) {
+                event.preventDefault();
+
+                var form = $(this);
+                var userId = form.find('#userId').val();
+                var userType = form.find('#userType').val();
+                var wristBand = form.find('#wristBandInputHidden').val();
+
+                if (!wristBand) {
+                    // Toastr çalışmadığı için alert ile basit bir uyarı verelim.
+                    alert('Lütfen önce bir bileklik okutun. ID alanı boş olamaz.');
+                    return;
+                }
+
+                var submitButton = form.find('button[type="submit"]');
+                submitButton.prop('disabled', true).text('Kaydediliyor...');
+
+                $.post('@Url.Action("CompleteActivation", "Admin")', {
+                    userId: userId,
+                    userType: userType,
+                    wristBand: wristBand
+                })
+                .done(function(response) {
+                    if (response.success) {
+
+                        // 1. Modal içindeki tüm form elemanlarını (buton, select, input) pasif hale getir.
+                        form.find('button, select, input').prop('disabled', true);
+
+                        // 2. Modal'ın alt kısmına (footer) istediğiniz mesajı büyük ve net bir şekilde ekle.
+                        form.find('.modal-footer').prepend('<div class="alert alert-success w-100 text-center"><strong>KİŞİ EKLENDİ, LÜTFEN SAYFAYI YENİLEYİN</strong></div>');
+
+                    } else {
+                        // Toastr yerine alert kullanıyoruz.
+                        alert(response.message || 'Aktivasyon başarısız oldu.');
+                        submitButton.prop('disabled', false).text('Aktivasyonu Tamamla');
+                    }
+                })
+                .fail(function() {
+                    alert('Sunucu ile iletişim kurulamadı.');
+                    submitButton.prop('disabled', false).text('Aktivasyonu Tamamla');
+                });
+            });
+
+            // 4. Modal içindeki diğer butonlar için dinleyiciler
+            modalContainer.on('click', '#clearWristbandBtn', () => modalContainer.find('#wristBandInputHidden, #wristBandInput').val(''));
+            modalContainer.on('click', '#readWristbandBtn', function() {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send("read");
+                    $(this).prop('disabled', true).text('Okunuyor...');
+                } else {
+                    toastr.error('Bileklik okuyucu servisine bağlantı yok.');
+                }
+            });
+
+            // --- WebSocket Bağlantı Kodları ---
+            let ws;
+            function connectWebSocket() {
+                ws = new WebSocket("ws://localhost:8765");
+                ws.onopen = () => console.log("Bileklik ajanına bağlanıldı.");
+                ws.onmessage = (event) => window.updateWristbandUI(JSON.parse(event.data));
+                ws.onclose = () => setTimeout(connectWebSocket, 3000);
+                ws.onerror = (error) => { console.error("WebSocket hatası: ", error); ws.close(); };
+            }
+            connectWebSocket();
+        });
+
+
+    </script>
+}

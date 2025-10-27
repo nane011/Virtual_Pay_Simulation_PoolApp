@@ -1,0 +1,174 @@
+﻿@using Virtual_Pay_Simulation.Models.ViewModels
+@using Virtual_Pay_Simulation.Models
+@model UserServiceInfoViewModel
+
+@{
+    ViewData["Title"] = "Hizmet Bilgileri";
+}
+
+<div class="container mt-5">
+    <div id="modalContainer"></div>
+    <h2 class="mb-3">@Model.Title</h2>
+    <p><strong>Açıklama:</strong> @Model.Service.Description</p>
+    <p><strong>Hizmet Tarih Aralığı:</strong> @Model.Service.StartTime.ToString("dd.MM.yyyy") - @Model.Service.EndTime.ToString("dd.MM.yyyy")</p>
+    <p><strong>Son Ödeme Tarihi:</strong> @Model.Service.PayDueDate.ToString("dd.MM.yyyy")</p>
+    <hr />
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <a asp-action="Services" asp-controller="User" class="btn btn-secondary mb-3">
+        ← Geri
+    </a>
+
+    @* --- ANA KONTROL BLOĞU --- *@
+    @if (Model.Service.PayDueDate < DateTime.Today)
+    {
+        <div class="alert alert-danger mt-4">
+            <h4>Alımlar Kapatıldı</h4>
+            <p>Bu hizmete ait tüm seansların son ödeme tarihi (@Model.Service.PayDueDate.ToString("dd.MM.yyyy")) geçtiği için başvuru ve satın alım işlemleri kapatılmıştır.</p>
+        </div>
+    }
+
+    <div class="mb-4">
+        <label><strong>Gün Kalıbı Seçin:</strong></label><br />
+        @foreach (var gender in Model.SeanceGroups.Select(g => g.Gender).Distinct())
+        {
+            <button type="button" class="btn btn-outline-primary me-2 mb-2 seance-group-btn" data-group="@((int)gender)">
+                @gender.ToString()
+            </button>
+        }
+    </div>
+
+    <div id="seance-list">
+        @foreach (var group in Model.SeanceGroups)
+        {
+            bool hasUserAppliedToThisGroup = Model.UserAppliedSessionIds.Any(appliedId => group.SessionIds.Contains(appliedId));
+            bool hasUserPaidForThisGroup = Model.UserPaidSessionIds.Any(paidId => group.SessionIds.Contains(paidId));
+            bool isBlockedByBorderCapacity = Model.UserHasPurchasedInService && group.CurrentCapacity >= group.BorderCapacity;
+
+            <div class="seance-group" data-group="@((int)group.Gender)" style="display:none">
+                <div class="card mb-3">
+                    <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <h5 class="card-title">Saat: @group.StartTime - @group.EndTime</h5>
+                            <p class="card-text mb-1"><strong>Günler:</strong> @string.Join(", ", group.Days)</p>
+                            <div class="mt-2">
+                                <span class="badge bg-info me-2">Başvuran: @group.ApplicantCount / @group.MinCapacity (Gerekli)</span>
+                                <span class="badge bg-primary me-2">Sınır: @group.BorderCapacity</span>
+                                <span class="badge bg-success">Kayıtlı: @group.CurrentCapacity / @group.MaxCapacity</span>
+                            </div>
+                        </div>
+                        <div class="ms-3 mt-2 mt-md-0">
+
+                            @* --- KESİN ÇÖZÜM: BUTONLARI KONTROL EDEN BLOK --- *@
+                            @if (Model.Service.PayDueDate < DateTime.Today)
+                            {
+                                <button class="btn btn-secondary" disabled>Alımlar Kapandı</button>
+                            }
+                            else
+                            {
+                                // Ödeme tarihi geçmediyse, normal buton mantığı çalışır
+                                if (hasUserPaidForThisGroup)
+                                {
+                                    <button class="btn btn-success" disabled>Satın Alındı</button>
+                                }
+                                else if (isBlockedByBorderCapacity)
+                                {
+                                    <button class="btn btn-secondary" disabled title="Yeni kullanıcılara öncelik tanınmaktadır.">Sınıra Ulaşıldı</button>
+                                }
+                                else if (hasUserAppliedToThisGroup && (group.CurrentCapacity + group.ApplicantCount) >= group.MinCapacity)
+                                {
+                                    <button type="button" class="btn btn-success"
+                                            onclick="initiatePurchase('@string.Join(",", group.SessionIds)')">
+                                        Satın Al
+                                    </button>
+                                }
+                                else if (hasUserAppliedToThisGroup)
+                                {
+                                    <div class="d-flex flex-column align-items-center">
+                                        <button class="btn btn-warning mb-2" disabled>Başvuru Yapıldı</button>
+                                        <a href="@Url.Action("CancelApplication", "User", new { sessionIds = string.Join(",", group.SessionIds) })" class="btn btn-danger btn-sm">
+                                            Başvuruyu Geri Al
+                                        </a>
+                                    </div>
+                                }
+                                else if (group.CurrentCapacity >= group.MaxCapacity)
+                                {
+                                    <button class="btn btn-secondary" disabled>Kapasite Dolu</button>
+                                }
+                                else if ((group.CurrentCapacity + group.ApplicantCount) < group.MinCapacity)
+                                {
+                                    <a href="@Url.Action("ApplyOrPurchase", "User", new { sessionIds = string.Join(",", group.SessionIds), isRequest = true })" class="btn btn-primary">
+                                        Başvur
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-success"
+                                            onclick="initiatePurchase('@string.Join(",", group.SessionIds)')">
+                                        Satın Al
+                                    </button>
+                                }
+                            }
+                            @* --- KONTROL BLOĞU SONU --- *@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // sözleşme gösterim fonksiyonu
+        function initiatePurchase(sessionIds) {
+            const modalContainer = $('#modalContainer');
+            const url = '@Url.Action("CheckAndInitiatePurchase", "User")' + '?sessionIds=' + sessionIds;
+
+            // Önce modal container'ı temizle ve yükleniyor animasyonu göster
+            modalContainer.html('<div class="text-center p-4"><div class="spinner-border"></div></div>');
+
+            // Controller'dan modal HTML'ini veya yönlendirme komutunu iste
+            $.get(url).done(function (response) {
+               if(response.action==='showModal'){
+                   //Eğer komut sözleşmeyi göster derse
+                   modalContainer.html(response.html);
+                   $('#contractModal').modal('show');
+               }
+               else if(response.action==='redirect'){
+                   //eğer komut direkt satın almaya yönlendir ise;
+                   window.location.href=response.url;
+               }
+            }).fail(function() {
+                alert('Bir hata oluştu, lütfen sayfayı yenileyip tekrar deneyin.');
+                modalContainer.html(''); // Hata durumunda container'ı temizle
+            });
+        }
+
+        $(document).ready(function () {
+            var firstButton = $('.seance-group-btn').first();
+            if (firstButton.length > 0) {
+                firstButton.addClass('active');
+                var firstGroup = firstButton.data('group');
+                $('.seance-group[data-group="' + firstGroup + '"]').show();
+            }
+
+            $('.seance-group-btn').on('click', function () {
+                $('.seance-group-btn').removeClass('active');
+                $(this).addClass('active');
+                var selectedGender = $(this).data('group');
+                $('.seance-group').hide();
+                $('.seance-group[data-group="' + selectedGender + '"]').show();
+            });
+        });
+    </script>
+}

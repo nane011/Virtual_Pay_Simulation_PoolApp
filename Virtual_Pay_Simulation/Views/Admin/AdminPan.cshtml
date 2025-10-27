@@ -1,0 +1,32 @@
+﻿@{
+    ViewBag.Title = "Admin Paneli";
+    var userName = ViewBag.UserName ?? "Kullanıcı";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container-fluid">
+    <div class="row">
+        <!--YAN BAR-->
+        <div class="col-md-3 bg-dark text-white min-vh-100 p-4">
+            <h3 class="mb-4 text-center">🌟 Merhaba, @userName</h3>
+			<hr class="border-light" />
+
+            <div class="d-grid gap-3">
+                <a class="btn btn-outline-light" href="/Admin/Profile">Profilim</a>
+                <a class="btn btn-outline-light" href="/Admin/CreateService">Yeni Hizmet Oluştur</a>
+                <a class="btn btn-outline-light" href="/Admin/CurrentServices">Mevcut Seanslar</a>
+				<a class="btn btn-outline-light" href="/Admin/Register">Kişi Oluştur</a>
+                <a class="btn btn-outline-light" href="/Admin/PAccountCtrl">Kullanıcı Yönetimi</a>
+                <a class="btn btn-outline-light" href="/Admin/ContractManager">Kullanıcı Sözleşmeleri</a>
+                <a class="btn btn-outline-light" href="/Admin/AnnouncementManager">Duyurular</a>
+                <hr class="border-light" />
+                <a class="btn btn-danger" href="/Public/FirstPage">Çıkış</a>
+            </div>
+    </div>
+
+    <div class="col-md-9 p-5">
+        <h2 class="mb-4">Hoşgeldiniz @userName</h2>
+    </div>
+</div>
+</div>

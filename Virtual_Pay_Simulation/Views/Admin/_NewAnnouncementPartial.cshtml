@@ -1,0 +1,43 @@
+﻿@model Announcement
+
+<div class="card">
+    <div class="card-header">
+        <h5>Yeni Duyuru Oluştur</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="CreateAnnouncement" asp-controller="Admin" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label">Başlık</label>
+                <input asp-for="Title" class="form-control" placeholder="Duyurunun başlığını giriniz" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label">Açıklama 1 (Kısa Açıklama)</label>
+                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Duyurunun özetini veya ilk paragrafını giriniz"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description2" class="form-label">Açıklama 2 (Detaylar)</label>
+                <textarea asp-for="Description2" class="form-control" rows="6" placeholder="Duyurunun detaylarını veya ikinci paragrafını giriniz"></textarea>
+                <span asp-validation-for="Description2" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="EndDate" class="form-label">Yayından Kaldırılma Tarihi</label>
+                <input asp-for="EndDate" type="date" class="form-control" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+                <small class="form-text text-muted">
+                    Bu tarihten sonra duyuru "Geçmiş Duyurular" sekmesinde görünecektir.
+                </small>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">Duyuruyu Yayınla</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,45 @@
+﻿@model Virtual_Pay_Simulation.Models.ViewModels.AdminDailyAttendanceViewModel
+
+@if (ViewData.ModelState.ContainsKey(""))
+{
+    <div class="alert alert-danger">@ViewData.ModelState[""].Errors.First().ErrorMessage</div>
+}
+else if (Model.IsFutureDate)
+{
+    <div class="alert alert-warning text-center p-4">Bu seansın tarihi henüz gelmediği için yoklama listesi görüntülenemez.</div>
+}
+else if (Model.Attendees == null || !Model.Attendees.Any())
+{
+    <div class="alert alert-info text-center p-4">Bu seans için kayıtlı katılımcı bulunmamaktadır.</div>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Ad Soyad</th>
+                <th>TC Kimlik No</th>
+                <th>Durum</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var attendee in Model.Attendees)
+            {
+                <tr>
+                    <td>@attendee.FullName</td>
+                    <td>@attendee.TCKimlikNo</td>
+                    <td>
+                        @if (attendee.IsPresent)
+                        {
+                            <span class="badge bg-success">Katıldı</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Katılmadı</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

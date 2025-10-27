@@ -1,0 +1,33 @@
+﻿@model List<ApplicationUser>
+@{
+    var Users = Model?.Where(u => u.WBandState && !u.IsBlocked).ToList() ?? new List<ApplicationUser>();
+}
+<h3>Aktif Kullanıcılar</h3>
+<table class="table table-hover">
+    <thead class="table-primary">
+        <tr>
+            <th>Ad-Soyad</th>
+            <th>Tip</th>
+            <th>Cinsiyet</th>
+            <th>Detaylar</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Users)
+        {
+            <tr>
+                <td>@user.Name @user.Surname</td>
+                <td>@user.UserType</td>
+                <td>@user.Gender</td>
+                <td>
+                    <button class="btn btn-sm btn-info view-details-btn" data-userid="@user.Id">Detaylar</button>
+                    <button class="btn btn-sm btn-danger delete-user-btn" data-userid="@user.Id" data-username="@user.Name @user.Surname">
+                        Sil
+                    </button>
+                </td>
+                
+            </tr>
+        }
+
+    </tbody>
+</table>

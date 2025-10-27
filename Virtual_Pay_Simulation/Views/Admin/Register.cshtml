@@ -1,0 +1,135 @@
+﻿@{
+    ViewData["Title"] = "Kayıt Ol";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+
+@if (TempData["RegisterSuccess"] != null)
+{
+    <div class="alert alert-success text-center">
+        @TempData["RegisterSuccess"]
+    </div>
+}
+@if (TempData["RegisterError"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["RegisterError"]
+    </div>
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg p-4">
+        <h3 class="text-center mb-3">Kayıt Ol</h3>
+
+        <form asp-action="Register" method="post" autocomplete="off">
+            <div class="mb-3">
+                <label class="form-label">Ad</label>
+                <input type="text" name="Name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Soyad</label>
+                <input type="text" name="Surname" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">TC Kimlik No</label>
+                <input type="text" name="TC" class="form-control" maxlength="11" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label"> Telefon </label>
+                <input type="text" name="phone" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label"> E Mail </label>
+                <input type="text" name="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label"> Bileklik ID </label>
+                <input type="text" name="wristband" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Cinsiyet</label>
+                <select id="GenderSelect" name="Gender" class="form-control" required>
+                    <option value="">Cinsiyet Seçiniz</option>
+                    <option value="0">Kadın</option>
+                    <option value="1">Erkek</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Rol</label>
+                <select id="roleSelect" name="RoleId" class="form-control" required>
+                    <option value="">Rol Seçiniz</option>
+                    <option value="1">Admin</option>
+                    <option value="2">Kullanıcı</option>
+                </select>
+            </div>
+            <div class="mb-3" id="userTypeContainer" style="display: none;">
+                <label class="form-label">Kullanıcı Türü</label>
+                <select name="UserType" class="form-control">
+                    <option value="">Tür Seçiniz</option>
+                    <option value="0">Öğrenci</option> <!-- Enum değeriyle eşleşmeli -->
+                    <option value="1">Personel</option>
+                    <option value="2">Üye</option>
+					<option value="3">Administrator</option>
+                </select>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+                
+                <a href="/Admin/AdminPan" class="btn btn-secondary">Geri</a>
+            </div>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </form>
+        <script>
+            document.getElementById("roleSelect").addEventListener("change", function() {
+                const container = document.getElementById("userTypeContainer");
+                const userTypeSelect = document.querySelector("select[name='UserType']");
+
+                if (this.value === "2") { // Kullanıcı seçilirse
+                    container.style.display = "block";
+                    // Sadece ilk 3 seçenek (Öğrenci, Personel, Üye)
+                    userTypeSelect.innerHTML = `
+                        <option value="">Tür Seçiniz</option>
+                        <option value="0">Öğrenci</option>
+                        <option value="1">Personel</option>
+                        <option value="2">Üye</option>
+                    `;
+                }
+                else if (this.value === "1") { // Admin seçilirse
+                    container.style.display = "block";
+                    // Sadece Administrator seçeneği
+                    userTypeSelect.innerHTML = `
+                        <option value="">Tür Seçiniz</option>
+                        <option value="3">Administrator</option>
+                    `;
+                }
+                else {
+                    container.style.display = "none";
+                    userTypeSelect.value = "";
+                }
+            });
+
+            // Sayfa yüklendiğinde kontrol
+            document.addEventListener("DOMContentLoaded", function() {
+                const roleSelect = document.getElementById("roleSelect");
+                if (roleSelect.value === "1" || roleSelect.value === "2") {
+                    document.getElementById("userTypeContainer").style.display = "block";
+                    // Sayfa yeniden yüklendiğinde doğru seçenekleri yükle
+                    roleSelect.dispatchEvent(new Event('change'));
+                }
+            });
+        </script>
+    </div>
+
+</div>
+

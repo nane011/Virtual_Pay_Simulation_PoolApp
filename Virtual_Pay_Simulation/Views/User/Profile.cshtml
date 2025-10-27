@@ -1,0 +1,14 @@
+﻿@model Virtual_Pay_Simulation.Models.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "Profilim";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">@ViewData["Title"]</h2>
+        <a asp-action="MainPage" asp-controller="User" class="btn btn-secondary">← Ana Sayfaya Dön</a>
+    </div>
+
+    @* YENİ KOD *@
+    <partial name="~/Views/Public/_ProfileCardPartial.cshtml" model="Model" />
+</div>

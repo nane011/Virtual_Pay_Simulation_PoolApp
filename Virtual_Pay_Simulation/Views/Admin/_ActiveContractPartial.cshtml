@@ -1,0 +1,32 @@
+﻿@model Contract
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="ContractManager" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ContractId" />
+            <input type="hidden" asp-for="Version" />
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label"></label>
+                <input asp-for="Title" class="form-control" placeholder="Örn: Hizmet Kullanım Sözleşmesi 2025" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Content" class="form-label"></label>
+                <!-- TEXTAREA'YA BİR ID EKLİYORUZ (zaten var gibi görünüyor) -->
+                <textarea asp-for="Content" class="form-control" rows="15" id="activeContractEditor"></textarea>
+                <span asp-validation-for="Content" class="text-danger"></span>
+                <small class="form-text text-muted">
+                    <strong>Önemli:</strong> Bu sözleşmeyi kaydettiğinizde, mevcut aktif sözleşme geçmişe taşınacak, bu yeni sözleşme aktif hale gelecek ve tüm kullanıcı onayları sıfırlanacaktır.
+                </small>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">Yeni Sözleşmeyi Kaydet ve Yayınla</button>
+            </div>
+        </form>
+    </div>
+</div>
+

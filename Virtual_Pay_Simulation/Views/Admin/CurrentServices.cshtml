@@ -1,0 +1,45 @@
+﻿@model List<Virtual_Pay_Simulation.Models.Service>
+@{
+    ViewData["Title"] = "Hizmet Yönetimi";
+    // HATA DÜZELTMESİ: Status değişkenini ViewBag'den alıyoruz.
+    var status = ViewBag.Status ?? "active";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Hizmet Yönetimi</h2>
+        <a asp-action="AdminPan" asp-controller="Admin" class="btn btn-secondary">← Panele Dön</a>
+    </div>
+
+    <div class="btn-group mb-4" role="group">
+        <a asp-action="CurrentServices" asp-route-status="active" class="btn @(status == "active" ? "btn-primary" : "btn-outline-primary")">Aktif Hizmetler</a>
+        <a asp-action="CurrentServices" asp-route-status="inactive" class="btn @(status == "inactive" ? "btn-primary" : "btn-outline-primary")">Yayınlanmamış</a>
+        <a asp-action="CurrentServices" asp-route-status="past" class="btn @(status == "past" ? "btn-primary" : "btn-outline-primary")">Geçmiş Hizmetler</a>
+    </div>
+
+    <div class="row">
+        @if (Model.Any())
+        {
+            // DÜZELTME: Tek bir döngü ile temiz bir kart yapısı oluşturuldu.
+            @foreach (var service in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@service.Title</h5>
+                            <p class="card-text text-muted small">@service.StartTime.ToString("dd.MM.yyyy") - @service.EndTime.ToString("dd.MM.yyyy")</p>
+                            <p class="card-text flex-grow-1">@service.Description</p>
+                            <a asp-controller="Admin" asp-action="ServiceInfo" asp-route-id="@service.ServiceId" class="btn btn-info mt-auto">Seansları Yönet</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col">
+                <div class="alert alert-info">Bu kritere uygun hizmet bulunamadı.</div>
+            </div>
+        }
+    </div>
+</div>

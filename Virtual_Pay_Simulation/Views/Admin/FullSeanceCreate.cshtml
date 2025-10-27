@@ -1,0 +1,128 @@
+﻿@model Virtual_Pay_Simulation.Models.ViewModels.SeanceViewModel
+@{
+    ViewBag.Title = "Toplu Seans Ekle";
+}
+
+<div class="container mt-5">
+    <h2>@Model.ServiceTitle - Toplu Seans Ekle</h2>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+    <form asp-action="FullSeanceCreate" method="post">
+        <input type="hidden" name="ServiceId" value="@Model.ServiceId" />
+
+        <div class="mb-4">
+            <label class="form-label">Gün Kalıpları</label>
+            <select name="SelectedTemplateIds" multiple size="5" class="form-select" required>
+                @foreach (var template in Model.Templates)
+                {
+                    <option value="@template.TemplateId">@template.TemplateName (@template.Gender)</option>
+                }
+            </select>
+            <small class="form-text text-muted">CTRL ile birden fazla kalıp seçebilirsiniz.</small>
+        </div>
+
+        <hr />
+        <div id="seanceContainer">
+            @for (int i = 0; i < Model.Seances.Count; i++)
+            {
+                <div class="card mb-3 seance-card" data-index="@i">
+                    <div class="card-body position-relative">
+                        <button type="button" class="btn-close position-absolute top-0 end-0 m-2 remove-seance" title="Seansı Sil"></button>
+
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label>Başlangıç Saati</label>
+                                <input type="time" name="Seances[@i].StartTime" class="form-control" value="@Model.Seances[i].StartTime" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label>Bitiş Saati</label>
+                                <input type="time" name="Seances[@i].EndTime" class="form-control" value="@Model.Seances[i].EndTime" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label>Min Kapasite</label>
+                                <input type="number" name="Seances[@i].MinCapacity" class="form-control" value="@Model.Seances[i].MinCapacity" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label>Sınır Kapasite</label>
+                                <input type="number" name="Seances[@i].BorderCapacity" class="form-control" value="@Model.Seances[i].BorderCapacity" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label>Maks Kapasite</label>
+                                <input type="number" name="Seances[@i].MaxCapacity" class="form-control" value="@Model.Seances[i].MaxCapacity" required />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <button type="button" class="btn btn-outline-primary w-100 mb-3" id="addSeanceBtn">+ Yeni Seans Ekle</button>
+        <button type="submit" class="btn btn-success w-100">Tüm Seansları Kaydet</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        let seanceIndex = @Model.Seances.Count;
+
+        $('#addSeanceBtn').on('click', function () {
+            let html = `
+            <div class="card mb-3 seance-card" data-index="${seanceIndex}">
+                <div class="card-body position-relative">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-2 remove-seance" title="Seansı Sil"></button>
+
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label>Başlangıç Saati</label>
+                            <input type="time" name="Seances[${seanceIndex}].StartTime" class="form-control" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label>Bitiş Saati</label>
+                            <input type="time" name="Seances[${seanceIndex}].EndTime" class="form-control" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label>Min Kapasite</label>
+                            <input type="number" name="Seances[${seanceIndex}].MinCapacity" class="form-control" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label>Sınır Kapasite</label>
+                            <input type="number" name="Seances[${seanceIndex}].BorderCapacity" class="form-control" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label>Maks Kapasite</label>
+                            <input type="number" name="Seances[${seanceIndex}].MaxCapacity" class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            $('#seanceContainer').append(html);
+            seanceIndex++;
+        });
+
+               $(document).on('click', '.remove-seance', function () {
+            $(this).closest('.seance-card').remove();
+
+            // Tüm seans kartlarını yeniden indeksle
+            $('#seanceContainer .seance-card').each(function(index) {
+                $(this).attr('data-index', index);
+                $(this).find('input').each(function() {
+                    const name = $(this).attr('name')
+                        .replace(/Seances\[\d+\]/, `Seances[${index}]`);
+                    $(this).attr('name', name);
+                });
+            });
+
+            seanceIndex = $('#seanceContainer .seance-card').length;
+        });
+    </script>
+}

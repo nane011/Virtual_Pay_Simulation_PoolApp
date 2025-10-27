@@ -1,0 +1,46 @@
+﻿@model List<ApplicationUser>?
+@{
+    var inactiveUsers = Model?.Where(u => u.WBandState == false).ToList() ?? new List<ApplicationUser>();
+}
+
+<h3>Ön Kayıtlı Kullanıcılar</h3>
+<table class="table table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Ad-Soyad</th>
+            <th>TC</th>
+            <th>Telefon</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (inactiveUsers.Any())
+        {
+            @foreach (var user in inactiveUsers)
+            {
+                <tr data-user-id="@user.Id">
+                    <td>@user.Name @user.Surname</td>
+                    <td>@user.UserName</td>
+                    <td>@user.PhoneNumber</td>
+                    <td>
+                        <!-- DÜZELTME: onclick kaldırıldı. Butona bir class ve data attribute eklendi. -->
+                        <button class="btn btn-sm btn-success approve-user-btn" data-userid="@user.Id">Aktive Et</button>
+                        <!-- DÜZELTME: Diğer butonlar için de aynı yapı kullanılıyor. -->
+                        <button class="btn btn-sm btn-info view-details-btn" data-userid="@user.Id">Detaylar</button>
+                        <button class="btn btn-sm btn-danger delete-user-btn" data-userid="@user.Id" data-username="@user.Name @user.Surname">
+                            Sil
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" class="text-center">Ön kayıtlı kullanıcı bulunamadı</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- BU DOSYADA ARTIK SCRIPT YOK -->

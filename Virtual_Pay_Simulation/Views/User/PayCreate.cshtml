@@ -1,0 +1,84 @@
+﻿@using Virtual_Pay_Simulation.Models.ViewModels
+@model PayCreateViewModel
+
+@{
+    ViewData["Title"] = "Ödeme Bilgileri";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <form asp-action="Create" method="post" autocomplete="off">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Ödeme Bilgileri</h3>
+                        <a asp-action="CancelPayment" asp-controller="User"
+                           asp-route-sessionIds="@Model.SessionIds"
+                           asp-route-serviceId="@Model.ServiceId"
+                           class="btn btn-danger btn-sm">
+                            Vazgeç ve Çık
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <!-- DÜZELTME: Bu bölüm artık başlangıçta GÖRÜNÜR olmalı -->
+                        <div id="payment-details">
+                            <h5 class="mb-3">@Model.ServiceTitle Hizmeti İçin Ödeme</h5>
+                            <h4 class="mb-4">Ödenecek Tutar: <strong>@Model.PaidAmount.ToString("C")</strong></h4>
+
+                            <div class="mb-4">
+                                <h6>Kullanıcı Bilgileri</h6>
+                                <ul class="list-group">
+                                    <li class="list-group-item"><strong>Ad Soyad:</strong> @Model.User.Name @Model.User.Surname</li>
+                                    <li class="list-group-item"><strong>TC No: </strong>@Model.User.UserName</li>
+                                    <li class="list-group-item"><strong>E-posta:</strong> @Model.User.Email</li>
+                                    <li class="list-group-item"><strong>Kullanıcı Tipi:</strong> @Model.User.UserType</li>
+                                </ul>
+                            </div>
+
+                            <button type="button" id="toggleCardInfoBtn" class="btn btn-success btn-lg w-100">
+                                Bilgilerim Doğru, Devam Et
+                            </button>
+
+                            <div id="card-info-section" class="mt-4" style="display:none;">
+                                <div class="mb-3">
+                                    <label for="kartNo" class="form-label">Kart Numarası</label>
+                                    <input type="text" id="kartNo" name="kartNo" class="form-control" placeholder="---- ---- ---- ----" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <label for="sonKullanmaTarihi" class="form-label">Son Kullanma Tarihi</label>
+                                        <input type="text" id="sonKullanmaTarihi" name="sonKullanmaTarihi" class="form-control" placeholder="AA/YY" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="cvc" class="form-label">CVC</label>
+                                        <input type="text" id="cvc" name="cvc" class="form-control" placeholder="---" required>
+                                    </div>
+                                </div>
+                                <button type="submit" id="submitPaymentBtn" class="btn btn-primary btn-lg w-100">
+                                    Ödemeyi Tamamla
+                                </button>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="sessionIds" value="@Model.SessionIds" />
+                        <input type="hidden" name="price" value="@Model.PaidAmount" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- DÜZELTME: jQuery kütüphanesi eklendi -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // DÜZELTME: Script sadeleştirildi ve düzeltildi
+        $(document).ready(function () {
+            $('#toggleCardInfoBtn').on('click', function() {
+                $('#card-info-section').show();
+                $(this).hide();
+            });
+        });
+    </script>
+}

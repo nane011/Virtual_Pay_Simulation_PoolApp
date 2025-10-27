@@ -1,0 +1,92 @@
+﻿@model Virtual_Pay_Simulation.Models.ViewModels.UserAttendanceHistoryViewModel
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0">Katılım Geçmişi</h3>
+        <p class="lead text-muted">@Model.UserFullName</p>
+    </div>
+    <button class="btn btn-secondary back-to-details-btn" data-userid="@Model.UserId">Kullanıcı Detaylarına Dön</button>
+</div>
+
+<!-- YENİ VE BASİTLEŞTİRİLMİŞ FİLTRELEME FORMU -->
+<div class="card bg-light mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label for="dateFilter" class="form-label"><strong>Belirli Bir Tarihe Göre Filtrele</strong></label>
+                <input type="date" id="dateFilter" class="form-control" value="@Model.FilterDate?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-4 d-flex align-items-center pt-3">
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" id="attendedOnlyFilter" @(Model.FilterShowOnlyAttended ? "checked" : "")>
+                    <label class="form-check-label" for="attendedOnlyFilter">Sadece Katıldıklarını Göster</label>
+                </div>
+            </div>
+            <div class="col-md-3 text-end">
+                <button class="btn btn-danger btn-sm" onclick="loadAttendanceHistory('@Model.UserId')">Filtreyi Temizle</button>
+                <button class="btn btn-success btn-sm" onclick="applyAttendanceFilter('@Model.UserId')">Filtrele</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- FİLTRELEME FORMU BİTİŞ -->
+@if (!Model.HistoryRecords.Any())
+{
+    <div class="alert alert-info text-center">
+        @if (Model.FilterDate.HasValue)
+        {
+            <strong>@Model.FilterDate.Value.ToString("dd MMMM yyyy")</strong>
+    
+            <span> tarihi için herhangi bir katılım kaydı bulunamadı.</span>
+        }
+        else
+        {
+            <span>Bu kullanıcıya ait herhangi bir katılım kaydı bulunmamaktadır.</span>
+        }
+    </div>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Katılım Tarihi</th>
+                <th>Hizmet Adı</th>
+                <th>Seans Bilgisi</th>
+                <th class="text-center">Durum</th>
+            </tr>
+        </thead>
+        <tbody id="attendanceHistoryTableBody">
+            @foreach (var record in Model.HistoryRecords)
+            {
+                <tr>
+                    <td>@record.AttendanceDate.ToString("dd MMMM yyyy")</td>
+                    <td>@record.ServiceName</td>
+                    <td>@record.SessionDay, @record.SessionTime</td>
+                    <td class="text-center">
+                        @if (record.IsPresent)
+                        {
+                            <span class="badge bg-success">Katıldı</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Katılmadı</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<script>
+    function applyAttendanceFilter(userId) {
+        const filterDate = $('#dateFilter').val();
+        const showOnlyAttended = $('#attendedOnlyFilter').is(':checked');
+
+        const url = `@Url.Action("LoadAttendanceHistory", "Admin")?userId=${userId}&filterDate=${filterDate}&showOnlyAttended=${showOnlyAttended}`;
+
+        $("#contentArea").html('<div class="text-center p-4"><div class="spinner-border"></div></div>').load(url);
+    }
+
+</script>

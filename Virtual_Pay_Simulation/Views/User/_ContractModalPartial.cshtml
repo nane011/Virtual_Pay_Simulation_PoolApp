@@ -1,0 +1,58 @@
+﻿@model Virtual_Pay_Simulation.Models.ViewModels.ContractViewModel
+
+<div class="modal fade" id="contractModal" tabindex="-1" aria-labelledby="contractModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contractModalLabel">@Model.Title (Versiyon @Model.Version)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @* Kopyalamayı engellemek için *@
+                <div class="p-3 border bg-light no-copy" style="max-height: 400px; overflow-y: auto; user-select: none;" oncontextmenu="return false;">
+                    @Html.Raw(Model.Content)
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" value="" id="contractAcceptCheck">
+                    <label class="form-check-label" for="contractAcceptCheck">
+                        Hizmet kullanım sözleşmesini okudum, anladım ve kabul ediyorum.
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" id="confirmContractBtn" disabled>Onayla ve Devam Et</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Onay kutucuğu işaretlendiğinde "Onayla" butonunu aktif et
+    $('#contractAcceptCheck').on('change', function() {
+        $('#confirmContractBtn').prop('disabled', !this.checked);
+    });
+
+    // Onayla butonuna tıklandığında
+    $('#confirmContractBtn').on('click', function() {
+        // Butonu tekrar pasif yap ve yükleniyor animasyonu göster
+        $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Onaylanıyor...');
+
+        // Controller'a AJAX isteği gönder
+        $.post('@Url.Action("AcceptContract", "User")', { version: @Model.Version })
+            .done(function(response) {
+                if (response.success) {
+                    // Onay başarılıysa, şimdi ödeme sayfasına git.
+                    // SessionIds'i modal'dan alıp yönlendirme yapıyoruz.
+                    window.location.href = '@Url.Action("InitiatePurchase", "User")' + '?sessionIds=' + '@Model.SessionIds';
+                } else {
+                    alert(response.message || 'Bir hata oluştu. Lütfen tekrar deneyin.');
+                    $('#confirmContractBtn').prop('disabled', false).html('Onayla ve Devam Et');
+                }
+            })
+            .fail(function() {
+                alert('Sunucu ile iletişim kurulamadı.');
+                $('#confirmContractBtn').prop('disabled', false).html('Onayla ve Devam Et');
+            });
+    });
+</script>

@@ -1,0 +1,68 @@
+﻿@model ApplicationUser
+
+<!-- Modal -->
+<div class="modal fade" id="activationModal" tabindex="-1" aria-labelledby="activationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="activationModalLabel">Kullanıcı Aktivasyon - @Model.Name @Model.Surname</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <!-- Form etiketi tüm içeriği kapsıyor -->
+            <form id="activationForm">
+                <div class="modal-body">
+                    <input type="hidden" id="userId" value="@Model.Id" />
+                    <input type="hidden" id="wristBandInputHidden" />
+
+                    <div class="mb-3">
+                        <label for="userType" class="form-label">Kullanıcı Tipi</label>
+                        <select id="userType" class="form-select">
+                            <option value="0">Öğrenci</option>
+                            <option value="1">Personel</option>
+                            <option value="2">Üye</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Okunan Bileklik ID</label>
+                        <div class="input-group">
+                            <input type="text" id="wristBandInput" class="form-control" placeholder="Bilekliği okutmak için butona basın..."> <!--readonly-->
+                            <button class="btn btn-outline-danger" type="button" id="clearWristbandBtn" title="Temizle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" type="button" id="readWristbandBtn">Bilekliği Algıla</button>
+                        <div id="wristbandStatus" class="form-text text-center mt-1"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <!-- Butonun tipi "submit" olarak kalıyor -->
+                    <button type="submit" class="btn btn-success" id="completeActivationBtn">Aktivasyonu Tamamla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--AŞAĞIDAKİ SCRİPT GEÇİCİ; LÜTFEN BİLEKLİK OKUYUCUYA ERİŞİM OLDUĞUNDA BU SCRİPTİ KALDIR VE READONLY AKTİVE ET.-->
+<script>
+    // Modal içindeki 'wristBandInput' alanına her karakter girildiğinde bu fonksiyon çalışır
+    $('#activationModal').on('input', '#wristBandInput', function() {
+        // Yazılan değeri al
+        var manualId = $(this).val();
+
+        // 1. Yazılan değeri gizli olan 'wristBandInputHidden' alanına kopyala
+        $('#wristBandInputHidden').val(manualId);
+
+        // 2. Eğer alana bir şey yazılmışsa "Aktivasyonu Tamamla" butonunu aktif et, boşsa pasif yap
+        if (manualId.length > 0) {
+            $('#completeActivationBtn').prop('disabled', false);
+        } else {
+            $('#completeActivationBtn').prop('disabled', true);
+        }
+    });
+</script>

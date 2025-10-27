@@ -1,0 +1,101 @@
+﻿@model List<ServiceDayTemplate>
+@using System.Globalization
+@{
+    ViewBag.Title = "Gün Kalıpları";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Yeni Gün Kalıbı Oluştur</h2>
+
+    <form asp-action="DayIndex" method="post" class="row g-3 mb-4">
+        @Html.AntiForgeryToken()
+        <div class="col-md-4">
+            <label class="form-label">Cinsiyet</label>
+            <select name="gender" class="form-select" required>
+                <option value="">Seçiniz</option>
+                <option value="0">Kadın</option>
+                <option value="1">Erkek</option>
+            </select>
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Günler</label>
+            <select name="selectedDays" multiple size="7" class="form-select" required>
+                @foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
+                {
+                    <option value="@day">@CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(day)</option>
+                }
+            </select>
+            <small class="form-text text-muted">Ctrl ile birden fazla seçim yapabilirsiniz.</small>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-success">Kalıbı Oluştur</button>
+        </div>
+        <a href="/Admin/CreateService" class="btn btn-secondary">Geri</a>
+    </form>
+
+    <div class="alert alert-danger" role="alert">
+        <strong>KRİTİK UYARI:</strong> Lütfen servis gün kalıplarını (ServiceDayTemplate) **SON DERECE DİKKATLİ** oluşturunuz ve silmemeye özen gösteriniz. **Silinen Kalıplar**, bu kalıbı kullanan **GEÇMİŞ VEYA AKTİF TÜM HİZMETLERDEKİ SEANSLARI** ve onlara ait MÜŞTERİ KAYITLARINI (Katılım/Attendances) **KALIJI OLARAK KAYBETMENİZE** neden olur!
+    </div>
+
+    <h4>Oluşturulmuş Kalıplar</h4>
+    <div class="row">
+        @foreach (var t in Model)
+        {
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm position-relative template-card" data-id="@t.TemplateId">
+                    <div class="card-body">
+                        <h5 class="card-title">@t.TemplateName</h5>
+                        <p class="card-text">
+                            <strong>Cinsiyet:</strong> @t.Gender <br />
+                            <strong>Günler:</strong>
+                            @string.Join(", ", t.Days.Select(d => CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(d.Day)))
+                        </p>
+                    </div>
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <button class="btn btn-sm btn-outline-danger delete-template" title="Sil">❌</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll(".delete-template").forEach(btn => {
+            btn.addEventListener("click", function (e) {
+                e.preventDefault();
+                const card = this.closest(".template-card");
+                const id = card.getAttribute("data-id");
+
+                if (confirm("DURUN! BU KALIP AKTİF VEYA GEÇMİŞ HİZMETLERİN VERİLERİNİ İÇEREBİLİR! SİLMEK, TÜM İLİŞKİLİ SEANS VE MÜŞTERİ KAYITLARININ (Örn: Yoklama) GERİ DÖNÜLEMEZ ŞEKİLDE SİLİNMESİNE NEDEN OLUR. Emin misiniz?")) {
+
+                    // ID'yi JSON olarak değil, doğrudan URL'ye ekleyerek gönderiyoruz.
+                    fetch(`/Admin/DeleteTemplate?id=${id}`, {
+                        method: "POST",
+                        headers: {
+                            // AntiForgeryToken'ı bulup başlığa ekliyoruz.
+                            "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Başarılı olursa kartı ekrandan kaldır.
+                            card.style.transition = 'opacity 0.5s ease';
+                            card.style.opacity = '0';
+                            setTimeout(() => card.remove(), 500);
+                        } else {
+                            alert(data.message || "Silme işlemi sırasında bir hata oluştu.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Hata:", error);
+                        alert("Sunucuya bağlanırken bir hata oluştu.");
+                    });
+                }
+            });
+        });
+    </script>
+}

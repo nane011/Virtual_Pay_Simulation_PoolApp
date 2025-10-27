@@ -1,0 +1,21 @@
+﻿@model Contract
+
+@if (Model == null || Model.Version == 0)
+{
+    <div class="alert alert-warning">Henüz oluşturulmuş aktif bir sözleşme bulunmamaktadır.</div>
+}
+else
+{
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">@Model.Title</h5>
+            <span class="badge bg-success">Aktif Versiyon: @Model.Version</span>
+        </div>
+        <div class="card-body">
+            @Html.Raw(Model.Content)
+        </div>
+        <div class="card-footer text-muted">
+            Yayınlanma Tarihi: @Model.CreatedDate.ToString("dd MMMM yyyy, HH:mm")
+        </div>
+    </div>
+}

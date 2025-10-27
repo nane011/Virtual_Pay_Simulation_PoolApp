@@ -1,0 +1,47 @@
+﻿@model Virtual_Pay_Simulation.Models.ViewModels.ProfileViewModel
+
+<div class="card shadow-sm">
+    <div class="card-header bg-secondary text-white">
+        <h4 class="mb-0">Profil Bilgilerim</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-5">Ad Soyad</dt>
+                    <dd class="col-sm-7">@Model.FullName</dd>
+
+                    <dt class="col-sm-5">TC Kimlik No</dt>
+                    <dd class="col-sm-7">@Model.TCKimlikNo</dd>
+
+                    <dt class="col-sm-5">E-posta Adresi</dt>
+                    <dd class="col-sm-7">@Model.Email</dd>
+
+                    <dt class="col-sm-5">Telefon Numarası</dt>
+                    <dd class="col-sm-7">@Model.PhoneNumber</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-5">Kullanıcı Tipi</dt>
+                    <dd class="col-sm-7"><span class="badge bg-primary">@Model.UserType</span></dd>
+
+                    <dt class="col-sm-5">Cinsiyet</dt>
+                    <dd class="col-sm-7">@Model.Gender</dd>
+
+                    <dt class="col-sm-5">Bileklik ID</dt>
+                    <dd class="col-sm-7">@(string.IsNullOrEmpty(Model.WristBand) ? "Henüz Atanmamış" : Model.WristBand)</dd>
+
+                    @* --- YENİ EKLENECEK CEZA PUANI ALANI --- *@
+                    <dt class="col-sm-5">Ceza Puanı</dt>
+                    <dd class="col-sm-7">
+                        @{
+                            var badgeClass = Model.PenaltyCount == 0 ? "bg-success" : (Model.PenaltyCount == 1 ? "bg-warning text-dark" : "bg-danger");
+                        }
+                        <span class="badge @badgeClass fs-6">@Model.PenaltyCount</span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>

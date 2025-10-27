@@ -1,0 +1,139 @@
+﻿@model Virtual_Pay_Simulation.Models.ViewModels.UserSessionsViewModel
+
+@{
+    ViewData["Title"] = "Seanslarım";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Seanslarım</h2>
+    <a asp-action="MainPage" asp-controller="User" class="btn btn-secondary mb-3">
+        ← Geri
+    </a>
+    <div class="mb-4 d-flex flex-wrap gap-2">
+        <button class="btn btn-outline-primary active-filter" data-filter="purchased">Satın Aldıklarım</button>
+        <button class="btn btn-outline-primary" data-filter="applied">Başvurularım</button>
+        <button class="btn btn-outline-primary" data-filter="past">Geçmiş Seanslarım</button>
+    </div>
+
+    <div id="session-lists">
+        <!-- Başvurularım Listesi -->
+        <div id="applied" class="session-list" style="display:none;">
+            @if (Model.AppliedSessions.Any())
+            {
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var group in Model.AppliedSessions)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">@group.ServiceTitle</h5>
+                                    <p class="card-text">
+                                        <strong>Günler:</strong> @group.Days<br />
+                                        <strong>Saat:</strong> @group.StartTime.ToString("hh\\:mm") - @group.EndTime.ToString("hh\\:mm")
+                                    </p>
+                                </div>
+                                <div class="card-footer bg-warning text-dark">
+                                    Başvuru Yapıldı
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p>Aktif başvurunuz bulunmamaktadır.</p>
+            }
+        </div>
+
+        <!-- Satın Aldıklarım Listesi -->
+        <div id="purchased" class="session-list">
+            @if (Model.PurchasedSessions.Any())
+            {
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var group in Model.PurchasedSessions)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">@group.ServiceTitle</h5>
+                                    <p class="card-text">
+                                        <strong>Günler:</strong> @group.Days<br />
+                                        <strong>Saat:</strong> @group.StartTime.ToString("hh\\:mm") - @group.EndTime.ToString("hh\\:mm")
+                                    </p>
+                                    <!-- YENİ BUTON -->
+                                    <a asp-action="SessionAttendance" asp-controller="User" asp-route-purchaseId="@group.PurchaseId" class="btn btn-info btn-sm mt-2">
+                                        Yoklama Detayları
+                                    </a>
+                                </div>
+                                <div class="card-footer bg-success text-white">
+                                    Satın Alındı
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p>Aktif olarak satın aldığınız bir seans bulunmamaktadır.</p>
+            }
+        </div>
+
+        <!-- Eski Seanslarım Listesi -->
+        <div id="past" class="session-list" style="display:none;">
+            @if (Model.PastSessions.Any())
+            {
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var group in Model.PastSessions)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">@group.ServiceTitle</h5>
+                                    <p class="card-text">
+                                        <strong>Günler:</strong> @group.Days<br />
+                                        <strong>Saat:</strong> @group.StartTime.ToString("hh\\:mm") - @group.EndTime.ToString("hh\\:mm")
+                                    </p>
+                                    <a asp-action="SessionAttendance" asp-controller="User" asp-route-purchaseId="@group.PurchaseId" class="btn btn-outline-secondary btn-sm mt-2">
+                                        Yoklama Geçmişi
+                                    </a>
+                                </div>
+                                <div class="card-footer bg-secondary text-white">
+                                    Seans Sona Erdi
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p>Geçmiş seansınız bulunmamaktadır.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Butonlara tıklama olayını dinle
+            document.querySelectorAll('.btn-outline-primary').forEach(button => {
+                button.addEventListener('click', function () {
+                    // Tüm butonlardaki 'active-filter' sınıfını kaldır
+                    document.querySelectorAll('.btn-outline-primary').forEach(btn => btn.classList.remove('active-filter'));
+                    // Tıklanan butona 'active-filter' sınıfını ekle
+                    this.classList.add('active-filter');
+
+                    // Tüm seans listelerini gizle
+                    document.querySelectorAll('.session-list').forEach(list => list.style.display = 'none');
+
+                    // Tıklanan butona ait listeyi göster
+                    const filter = this.dataset.filter;
+                    document.getElementById(filter).style.display = 'block';
+                });
+            });
+        });
+    </script>
+}

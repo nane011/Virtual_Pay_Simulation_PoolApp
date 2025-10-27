@@ -1,0 +1,26 @@
+﻿@model List<Contract>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Gösterilecek geçmiş sözleşme versiyonu bulunmamaktadır.</div>
+}
+else
+{
+    <div class="accordion" id="pastContractsAccordion">
+        @foreach (var contract in Model)
+        {
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-@contract.Version">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@contract.Version">
+                        <strong>Versiyon @contract.Version</strong> (@contract.CreatedDate.ToString("dd MMMM yyyy")) - @contract.Title
+                    </button>
+                </h2>
+                <div id="collapse-@contract.Version" class="accordion-collapse collapse" data-bs-parent="#pastContractsAccordion">
+                    <div class="accordion-body bg-light">
+                        @Html.Raw(contract.Content)
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

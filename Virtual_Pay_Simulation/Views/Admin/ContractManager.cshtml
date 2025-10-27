@@ -1,0 +1,91 @@
+﻿@{
+    ViewData["Title"] = "Sözleşme Yönetimi";
+}
+
+<div class="container mt-4">
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">@ViewData["Title"]</h2>
+        </div>
+        <a href="/Admin/AdminPan" class="btn btn-secondary mt-3">Geri</a>
+    </div>
+
+    <ul class="nav nav-tabs" id="contractTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="view-active-contract-tab" data-bs-toggle="tab" type="button">Aktif Sözleşmeyi Görüntüle</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            @* İSİM DEĞİŞTİRİLDİ *@
+            <button class="nav-link active" id="new-contract-tab" data-bs-toggle="tab" type="button">Yeni Sözleşme Ekle</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="past-contracts-tab" data-bs-toggle="tab" type="button">Geçmiş Sözleşmeler</button>
+        </li>
+    </ul>
+
+    <div class="tab-content pt-3">
+        <div id="contentArea">
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.tiny.cloud/1/3u5dgzz8furvp6bznk03vetoon61pv3n8x01thedzgx8rr63/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // "Yeni Sözleşme Ekle" sekmesini yükleyen fonksiyon
+            function loadNewContractForm() {
+                $("#contentArea").html('<div class="text-center p-4"><div class="spinner-border"></div></div>');
+                $("#contentArea").load('@Url.Action("LoadActiveContractPartial", "Admin")', function() {
+                    // Partial yüklendikten sonra TinyMCE'yi başlat
+                    initTinyMCE();
+                });
+            }
+
+            // Diğer fonksiyonlar...
+            function loadPastContracts() {
+                $("#contentArea").html('<div class="text-center p-4"><div class="spinner-border"></div></div>');
+                $("#contentArea").load('@Url.Action("LoadPastContractsPartial", "Admin")');
+            }
+
+            function loadActiveContractView() {
+                $("#contentArea").html('<div class="text-center p-4"><div class="spinner-border"></div></div>');
+                $("#contentArea").load('@Url.Action("LoadActiveContractViewPartial", "Admin")');
+            }
+
+            // TinyMCE başlatma fonksiyonu
+            function initTinyMCE() {
+                // Önce varsa eski editörü temizle
+                if (typeof tinymce !== 'undefined' && tinymce.get('activeContractEditor')) {
+                    tinymce.remove('#activeContractEditor');
+                }
+
+                // Yeni editörü başlat
+                tinymce.init({
+                    selector: 'textarea#activeContractEditor',
+                    placeholder: 'Sözleşme metnini buraya yazınız...',
+                    plugins: 'lists link image table code help wordcount',
+                    toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link image | code',
+                    init_instance_callback: function(editor) {
+                        console.log('TinyMCE editorü başarıyla oluşturuldu.');
+                    }
+                });
+            }
+
+            // Sekme butonlarına tıklama olayları
+            $('#new-contract-tab').on('click', loadNewContractForm);
+            $('#past-contracts-tab').on('click', loadPastContracts);
+            $('#view-active-contract-tab').on('click', loadActiveContractView);
+
+            // Sayfa ilk açıldığında YENİ SÖZLEŞME EKLEME sekmesini otomatik yükle
+            loadNewContractForm();
+        });
+    </script>
+}

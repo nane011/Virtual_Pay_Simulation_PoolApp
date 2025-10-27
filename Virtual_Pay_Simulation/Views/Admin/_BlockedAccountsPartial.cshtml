@@ -1,0 +1,27 @@
+﻿@model List<ApplicationUser>
+<h3>Bloke Hesaplar</h3>
+<table class="table table-hover">
+    <thead class="table-danger">
+        <tr>
+            <th>Ad-Soyad</th>
+            <th>TC</th>
+            <th>Telefon</th>
+            <th>Son Ceza Nedeni</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Where(u => u.IsBlocked))
+        {
+            <tr>
+                <td>@user.Name @user.Surname</td>
+                <td>@user.UserName</td>
+                <td>@user.PhoneNumber</td>
+                <td>@(user.UserPenalties?.OrderByDescending(p => p.PenaltyId).FirstOrDefault()?.Reason ?? "Belirlenmemiş")</td>
+                <td>
+                    <button class="btn btn-sm btn-warning unblock-user-btn" data-userid="@user.Id">Engeli Kaldır</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

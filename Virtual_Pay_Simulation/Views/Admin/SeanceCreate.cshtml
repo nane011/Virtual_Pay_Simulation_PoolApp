@@ -1,0 +1,22 @@
+﻿@{
+    ViewBag.Title = "Seans Oluşturma Yöntemi";
+    var serviceTitle = Context.Session.GetString("CurrentServiceTitle");
+    var serviceId = Context.Session.GetInt32("CurrentServiceId");
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Hizmet: <strong>@serviceTitle</strong></h2>
+    <div class="alert alert-info">Seansları hangi yöntemle oluşturmak istersiniz?</div>
+
+    <div class="d-flex flex-column gap-3">
+        <form asp-action="FullSeanceCreate" method="get">
+            <input type="hidden" name="serviceId" value="@serviceId" />
+            <button class="btn btn-primary btn-lg w-100">Tüm gün kalıplarına aynı anda seans ekle</button>
+        </form>
+
+        <form asp-action="SeperateSeance" method="get">
+            <input type="hidden" name="serviceId" value="@serviceId" />
+            <button class="btn btn-secondary btn-lg w-100">Gün kalıplarına ayrı ayrı seans ekle</button>
+        </form>
+    </div>
+</div>

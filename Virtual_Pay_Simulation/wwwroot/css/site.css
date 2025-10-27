@@ -12,11 +12,24 @@ html {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+footer {
+    background-color: #f8f9fa; /* Açýk gri arkaplan */
+    position: relative; /* Sayfa sonuna sabitlemek için */
+    bottom: 0;
+    width: 100%;
 }
 
 body {
   margin-bottom: 60px;
+}
+
+.list-group-item {
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#contentArea {
+    min-height: 70vh;
+    border-left: 1px solid #dee2e6;
+    padding-left: 20px;
 }

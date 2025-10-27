@@ -1,0 +1,105 @@
+﻿@model Virtual_Pay_Simulation.Models.ViewModels.AdminSessionDetailViewModel
+@{
+    ViewData["Title"] = "Seans Detayları";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">@Model.ServiceTitle</h2>
+            <p class="lead text-muted">@Model.SessionInfo</p>
+        </div>
+        <a asp-action="ServiceInfo" asp-controller="Admin" asp-route-id="@Model.ServiceId" class="btn btn-secondary">← Geri</a>
+    </div>
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="participants-tab" data-bs-toggle="tab" data-bs-target="#participants" type="button" role="tab">Katılımcı Durumları</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab">Seans Yoklaması</button>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="participants" role="tabpanel">
+            <div class="p-3">
+                <!-- Katılımcı listesi buraya yüklenecek -->
+                Yükleniyor...
+            </div>
+        </div>
+        <div class="tab-pane fade" id="attendance" role="tabpanel">
+            <div class="p-3">
+                <h5 class="mb-3">Tarih Bazlı Yoklama Listesi</h5>
+                <div class="list-group">
+                    @foreach (var date in Model.SessionDates)
+                    {
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center load-attendance-btn"
+                           data-date="@date.ToString("yyyy-MM-dd")">
+                            @date.ToString("dd MMMM yyyy, dddd")
+                            <span class="badge bg-primary rounded-pill">Yoklamayı Görüntüle</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Daily Attendance -->
+<div class="modal fade" id="attendanceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="attendanceModalLabel">Yoklama Listesi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="attendanceModalBody">
+                <!-- Yoklama listesi partial view'ı buraya yüklenecek -->
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        // Değişkenleri buraya, yani her iki fonksiyonun da erişebileceği bir kapsama taşıyın.
+        var serviceId = @Model.ServiceId;
+        var groupIdentifier = '@Model.GroupIdentifier';
+
+        $(document).ready(function() {
+            // Değişkenler artık üst kapsamda olduğu için burada tekrar tanımlamaya gerek yok.
+            var url = '@Url.Action("LoadParticipantsPartial", "Admin")?serviceId=' + serviceId + '&groupIdentifier=' + encodeURIComponent(groupIdentifier);
+            $('#participants').load(url);
+        });
+
+        $('.load-attendance-btn').on('click', function(e) {
+            e.preventDefault(); // Linkin normal davranışını engelle
+
+            // Tıklanan butonun "data-date" özelliğinden tarihi al
+            const date = $(this).data('date');
+            const modalBody = $('#attendanceModalBody');
+            const modalTitle = $('#attendanceModalLabel');
+
+            // Modal'ın başlığını dinamik olarak ayarla
+            modalTitle.text($(this).text().replace("Yoklamayı Görüntüle", "").trim() + ' Yoklama Listesi');
+
+            // Modal'ın içine "Yükleniyor..." animasyonu koy
+            modalBody.html('<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+
+            // Controller'a gönderilecek olan doğru URL'yi oluştur
+            // ARTIK DOĞRU ÇALIŞACAK: serviceId ve groupIdentifier değişkenlerine artık buradan erişilebilir.
+            const attendanceUrl = `@Url.Action("LoadDailyAttendance", "Admin")?serviceId=${serviceId}&groupIdentifier=${encodeURIComponent(groupIdentifier)}&date=${date}`;
+
+            // Oluşturulan URL'den veriyi çek ve modal'ın içine yükle
+            modalBody.load(attendanceUrl, function() {
+                // Yükleme tamamlandığında, Bootstrap'in modal gösterme fonksiyonunu tetikle
+                const attendanceModal = new bootstrap.Modal(document.getElementById('attendanceModal'));
+                attendanceModal.show();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,68 @@
+﻿@using System.Globalization
+@model Virtual_Pay_Simulation.Models.ViewModels.SessionAttendanceViewModel
+
+@{
+    ViewData["Title"] = "Yoklama Detayları";
+}
+
+<!-- Font Awesome ikonları için -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">@Model.ServiceTitle</h2>
+            <p class="lead text-muted">@Model.SessionDays | @Model.SessionTime</p>
+        </div>
+        <a asp-action="CurrentSessions" asp-controller="User" class="btn btn-secondary">
+            ← Seanslarıma Geri Dön
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 40%;">Tarih</th>
+                    <th style="width: 40%;">Gün</th>
+                    <th style="width: 20%;" class="text-center">Durum</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.AttendanceRecords.Any())
+                {
+                    @foreach (var record in Model.AttendanceRecords)
+                    {
+                        <tr>
+                            <td>@record.AttendanceDate.ToString("dd MMMM yyyy")</td>
+                            <td>@record.AttendanceDate.ToString("dddd", new CultureInfo("tr-TR"))</td>
+                            <td class="text-center">
+                                @if (record.AttendanceDate.Date > DateTime.Today)
+                                {
+                                    <i class="fas fa-circle text-muted" title="Gelecek Seans"></i>
+                                }
+                                else
+                                {
+                                    @if (record.IsPresent)
+                                    {
+                                        <i class="fas fa-check-circle text-success fa-lg" title="Katıldı"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-times-circle text-danger fa-lg" title="Katılmadı"></i>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="3" class="text-center">Bu seansa ait yoklama kaydı bulunamadı.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

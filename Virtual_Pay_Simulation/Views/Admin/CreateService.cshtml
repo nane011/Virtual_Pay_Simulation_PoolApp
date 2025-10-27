@@ -1,0 +1,158 @@
+﻿@model ServiceCreateViewModel
+
+@* Sayfada kullanılacak Toastr kütüphanesi için CSS ve JS dosyalarını ekliyoruz *@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Başlangıç tarihi alanına bir değişiklik dinleyicisi ekliyoruz
+            $('#StartTime').on('change', function () {
+                var startDate = $(this).val();
+
+                if (startDate) {
+                    // JavaScript Date objesine dönüştürüyoruz
+                    var date = new Date(startDate);
+
+                    // Bitiş tarihi için 30 gün ekliyoruz
+                    date.setDate(date.getDate() + 30);
+                    var endDate = date.toISOString().split('T')[0];
+                    $('#EndTime').val(endDate);
+
+                    // Son ödeme tarihi için 5 gün ekliyoruz
+                    var payDueDate = new Date(startDate);
+                    payDueDate.setDate(payDueDate.getDate() + 5);
+                    var payDueDateValue = payDueDate.toISOString().split('T')[0];
+                    $('#PayDueDate').val(payDueDateValue);
+                }
+            });
+
+            // Bitiş tarihine tıklandığında pop-up mesajı gösteriyoruz
+            $('#EndTime').on('click', function() {
+                toastr.options = {
+                  "closeButton": true,
+                  "progressBar": true,
+                  "positionClass": "toast-top-right",
+                  "showDuration": "300",
+                  "hideDuration": "1000",
+                  "timeOut": "2000",
+                  "extendedTimeOut": "1000",
+                  "showEasing": "swing",
+                  "hideEasing": "linear",
+                  "showMethod": "fadeIn",
+                  "hideMethod": "fadeOut"
+                };
+                toastr.info("Tahmini hizmet bitiş tarihi: Başlangıç tarihine 30 gün eklenmiştir.");
+            });
+
+            // Son ödeme tarihine tıklandığında pop-up mesajı gösteriyoruz
+            $('#PayDueDate').on('click', function() {
+                toastr.options = {
+                  "closeButton": true,
+                  "progressBar": true,
+                  "positionClass": "toast-top-right",
+                  "showDuration": "300",
+                  "hideDuration": "1000",
+                  "timeOut": "2000",
+                  "extendedTimeOut": "1000",
+                  "showEasing": "swing",
+                  "hideEasing": "linear",
+                  "showMethod": "fadeIn",
+                  "hideMethod": "fadeOut"
+                };
+                toastr.info("Tahmini son ödeme tarihi: Başlangıç tarihine 5 gün eklenmiştir.");
+            });
+        });
+    </script>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3>Yeni Hizmet Oluştur</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="CreateService" method="post">
+
+            <div class="alert alert-warning d-flex align-items-center p-3 mb-4" role="alert">
+                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                <div class="flex-grow-1">
+                    <strong>Önemli:</strong> Lütfen hizmet oluşturmadan önce gün kalıplarını kontrol ediniz.
+                </div>
+                <a href="/Admin/DayIndex" class="btn btn-dark ms-auto">
+                    <i class="fas fa-calendar-alt me-2"></i>Gün Kalıplarını Yönet
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Title"></label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Description"></label>
+                        <textarea asp-for="Description" class="form-control"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="StudentPrice"></label>
+                            <input asp-for="StudentPrice" class="form-control" />
+                            <span asp-validation-for="StudentPrice" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="StaffPrice"></label>
+                            <input asp-for="StaffPrice" class="form-control" />
+                            <span asp-validation-for="StaffPrice" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="MemberPrice"></label>
+                            <input asp-for="MemberPrice" class="form-control" />
+                            <span asp-validation-for="MemberPrice" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="StartTime"></label>
+                        <input asp-for="StartTime" type="date" class="form-control" />
+                        <span asp-validation-for="StartTime" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="EndTime"></label>
+                        <input asp-for="EndTime" type="date" class="form-control" />
+                        <span asp-validation-for="EndTime" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="PayDueDate"></label>
+                        <input asp-for="PayDueDate" type="date" class="form-control" />
+                        <span asp-validation-for="PayDueDate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-start gap-2 mt-4">
+                <a asp-action="CurrentServices" asp-controller="Admin" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Geri
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Hizmeti Oluştur
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
